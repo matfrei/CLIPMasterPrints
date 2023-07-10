@@ -45,6 +45,18 @@ cd CLIPMasterPrints
 pip install -e .
 ```
 
+Mining and evaluating CLIPMasterPrints
+-------
+
+To mine fooling master images, use
+```
+python train/mine.py --config-path configs/config.yaml
+```
+
+To display some plots for mined images, execute
+```
+python eval/eval_results.py
+```
 
 Authors
 -------
