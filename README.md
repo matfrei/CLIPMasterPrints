@@ -50,7 +50,7 @@ Mining and evaluating CLIPMasterPrints
 
 To mine fooling master images, use
 ```
-python train/mine.py --config-path configs/config.yaml
+python train/mine.py --config-path config/config.yaml
 ```
 
 To display some plots for mined images, execute
