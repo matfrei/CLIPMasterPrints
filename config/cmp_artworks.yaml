@@ -1,0 +1,36 @@
+# Data
+DATA:
+  CAPTION_PATH: 'data/famous_paintings.txt'
+
+# Experiment paramters
+RANDOM_SEED: 0
+
+# Experiment logging information
+EXPERIMENT_LOG:
+  BASEPATH: 'results-reproduced/CLIPMasterPrints'
+  MODEL_NAME: 'CMA-ES+SDDecode'
+  EXPERIMENT_NAME: 'mine-cmp-artworks'
+
+# Loss class to use
+LOSS:
+  CLASS: "CLIPLoss"
+
+# parameters specific to autoencoder
+AUTOENCODER:
+  CLASS_NAME: 'StableDiffusionWrapper'
+  CONFIG_PATH: '../external/stable-diffusion/configs/stable-diffusion/v1-inference.yaml'
+  WEIGHT_PATH: '../external/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt'
+  IMG_HEIGHT: 336
+  IMG_WIDTH: 336
+  LATENT_CHANNELS: 4
+  DOWNSAMPLING_FACTOR: 8
+
+# parameters specific to CLIP
+CLIP:
+  MODEL_STRINGS: ['ViT-L/14@336px']
+
+# optimizer to use
+OPTIMIZER:
+  METHOD: 'CMA-ES'
+  ITER: 18000
+  CHECK_POINT_AFTER_X_ITER: 3000
