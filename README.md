@@ -1,6 +1,8 @@
 
 # CLIPMasterPrints: Fooling Contrastive Language-Image Pre-training Using Latent Variable Evolution
 
+![alt text](static/demo.gif)
+
 
 Installation
 -------
