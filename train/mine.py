@@ -16,7 +16,7 @@ from clipmasterprints import Experiment, StableDiffusionWrapperWGradient, Latent
 from functools import partial
 
 candidate_to_2d = lambda input, shape: input.reshape(shape).astype('float32')
-to_np_image = lambda tensor: tensor.cpu().permute(0, 2, 3, 1).numpy()[0]
+to_np_image = lambda tensor: tensor.detach().cpu().permute(0, 2, 3, 1).numpy()[0]
 
 def save_solution(es_object, iter, outpath, weightpath, latent_shape, representation, torch_device):
     with open(os.path.join(weightpath, f'es.pkl'), 'wb') as file:
@@ -94,8 +94,7 @@ def find_fooling():
     ac_dims = (1,config.AUTOENCODER.LATENT_CHANNELS,config.AUTOENCODER.IMG_HEIGHT // config.AUTOENCODER.DOWNSAMPLING_FACTOR,config.AUTOENCODER.IMG_WIDTH // config.AUTOENCODER.DOWNSAMPLING_FACTOR)
 
     # arrange hyperparams into dict
-    hyperparam_dict = {'save_after_x_iter': config.OPTIMIZER.CHECK_POINT_AFTER_X_ITER, 'init_vector':'norm', 'sigma_0': 1., 'pop_size':'default', 'max_iter': config.OPTIMIZER.ITER}
-
+    hyperparam_dict = {'save_after_x_iter': config.OPTIMIZER.CHECK_POINT_AFTER_X_ITER, 'init_vector':'norm', 'sigma_0': 1., 'pop_size':'default', 'max_iter': config.OPTIMIZER.ITER, 'learning_rate': config.OPTIMIZER.LR, 'batch_size': config.OPTIMIZER.BATCH_SIZE}
     num_runs = config.NUM_RUNS
     sample_from_captions_lst = config.SAMPLE_CAPTIONS
 
