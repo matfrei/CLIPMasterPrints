@@ -50,8 +50,10 @@ Mining and evaluating CLIPMasterPrints
 
 To mine fooling master images, use
 ```
-python train/mine.py --config-path config/config.yaml
+python train/mine.py --config-path config/<config-name>.yaml
 ```
+where ```<config-name>``` is a placeholder for the desired config file.
+Use ```cmp_artworks.yaml``` to target artwork captions or ```cmp_imagenet_classes_*.yaml``` to reproduce our experiments on imagenet class captions.
 
 To display some plots for mined images, execute
 ```
