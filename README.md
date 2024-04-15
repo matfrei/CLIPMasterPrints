@@ -63,9 +63,11 @@ python eval/eval_results.py
 Authors
 -------
 
-Matthias Freiberger <matfr@itu.dk>
+Matthias Freiberger <mafr@di.ku.dk>
 
 Peter Kun <peku@itu.dk>
+
+Christian Igel <igel@di.ku.dk>
 
 Anders Sundnes Løvlie <asun@itu.dk>
  
