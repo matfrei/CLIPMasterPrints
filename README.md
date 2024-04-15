@@ -1,4 +1,4 @@
-# CLIPMasterPrints: Fooling Contrastive Language-Image Pre-training Using Latent Variable Evolution
+# Fooling Contrastive Language-Image Pre-trained Models with CLIPMasterPrints
 
 [![Paper](https://img.shields.io/badge/paper-arxiv.2307.03798-B31B1B.svg)](https://arxiv.org/abs/2307.03798) 
 
