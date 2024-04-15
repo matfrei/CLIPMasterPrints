@@ -82,9 +82,9 @@ If you use the code for academic or commecial use, please cite the associated pa
   
   url = {https://arxiv.org/abs/2307.03798},
   
-  author = {Freiberger, Matthias  and Kun, Peter and Løvlie, Anders Sundnes and Risi, Sebastian},
+  author = {Freiberger, Matthias  and Kun, Peter and Igel, Christian and Løvlie, Anders Sundnes and Risi, Sebastian},
   
-  title = {CLIPMasterPrints: Fooling Contrastive Language-Image Pre-training Using Latent Variable Evolution},
+  title = {Fooling Contrastive Language-Image Pre-trained Models with CLIPMasterPrints},
   
   publisher = {arXiv},
   
