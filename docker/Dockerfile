@@ -64,11 +64,19 @@ RUN pip install -e .
 
 WORKDIR /
 
+RUN git clone https://github.com/salesforce/BLIP.git
+WORKDIR /BLIP
+RUN pip install -r requirements.txt
+ENV PYTHONPATH=$PYTHONPATH:/path/to/blip/BLIP
+
+WORKDIR /
 RUN git clone https://github.com/matfrei/CLIPMasterPrints.git
 
 WORKDIR /CLIPMasterPrints
 RUN ls -la
 RUN pip install -e .
+
+
 
 # Connect the dockerfile with it's original repo
 LABEL org.opencontainers.image.source https://github.com/matfrei/CLIPMasterPrints
