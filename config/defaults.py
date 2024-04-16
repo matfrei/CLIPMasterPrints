@@ -52,6 +52,7 @@ _C.OPTIMIZER.ITER = 20000
 _C.OPTIMIZER.CHECK_POINT_AFTER_X_ITER = 300
 _C.OPTIMIZER.BATCH_SIZE = 14
 _C.OPTIMIZER.LR = 5e-5
+_C.OPTIMIZER.X_INIT_PATH = 'data/sunflower.jpg'
 
 def get_cfg_defaults():
   """Get a yacs CfgNode object with default values for foolingclip"""

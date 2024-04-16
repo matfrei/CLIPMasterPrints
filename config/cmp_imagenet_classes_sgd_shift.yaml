@@ -1,0 +1,43 @@
+# Data
+DATA:
+  CAPTION_PATH: 'data/imagenet_classes.txt'
+
+# Experiment parameters
+RANDOM_SEED: 0
+NUM_RUNS: 1
+SAMPLE_CAPTIONS: [25, 50, 75, 100]
+GPU_ID: 2
+
+# Experiment logging information
+EXPERIMENT_LOG:
+  BASEPATH: 'results-reproduced/CLIPMasterPrints'
+  MODEL_NAME: 'CMPImageNet'
+  EXPERIMENT_NAME: 'mine-cmp-imagenet-sgd-shift'
+
+# Loss class to use
+LOSS:
+  CLASS: "CLIPLoss"
+
+# parameters specific to autoencoder
+AUTOENCODER:
+  CLASS_NAME: 'StableDiffusionWrapper'
+  CONFIG_PATH: '../external/stable-diffusion/configs/stable-diffusion/v1-inference.yaml'
+  WEIGHT_PATH:  '../external/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt'
+  IMG_HEIGHT: 224
+  IMG_WIDTH: 224
+  LATENT_CHANNELS: 4
+  DOWNSAMPLING_FACTOR: 8
+  BATCH_SIZE: 40
+
+# parameters specific to CLIP
+CLIP:
+  MODEL_STRINGS: ['ViT-L/14']
+  SHIFT: 0.25
+
+# optimizer to use
+OPTIMIZER:
+  METHOD: 'RAWSGD'
+  ITER: 1000
+  CHECK_POINT_AFTER_X_ITER: 100
+  BATCH_SIZE: 1
+  LR: 1e-1

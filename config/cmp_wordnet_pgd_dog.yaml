@@ -1,0 +1,41 @@
+# Data
+DATA:
+  CAPTION_PATH: 'data/wordnet/dog_opt.txt'
+
+# Experiment parameters
+RANDOM_SEED: 0
+NUM_RUNS: 1
+GPU_ID: 0
+
+# Experiment logging information
+EXPERIMENT_LOG:
+  BASEPATH: 'results-reproduced/'
+  MODEL_NAME: 'CMPWordNet'
+  EXPERIMENT_NAME: 'mine-wordnet-pgd-dogs'
+
+# Loss class to use
+LOSS:
+  CLASS: "CLIPLoss"
+
+# parameters specific to autoencoder
+AUTOENCODER:
+  CLASS_NAME: 'StableDiffusionWrapper'
+  CONFIG_PATH: '../external/stable-diffusion/configs/stable-diffusion/v1-inference.yaml'
+  WEIGHT_PATH:  '../external/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt'
+  IMG_HEIGHT: 224
+  IMG_WIDTH: 224
+  LATENT_CHANNELS: 4
+  DOWNSAMPLING_FACTOR: 8
+  BATCH_SIZE: 40
+
+# parameters specific to CLIP
+CLIP:
+  MODEL_STRINGS: ['ViT-L/14']
+
+# optimizer to use
+OPTIMIZER:
+  METHOD: 'PGD'
+  ITER: 1000
+  CHECK_POINT_AFTER_X_ITER: 100
+  BATCH_SIZE: 1
+  X_INIT_PATH: 'data/sunflower.jpg'

@@ -12,7 +12,7 @@ from config.defaults import get_cfg_defaults
 from PIL import Image
 from pathlib import Path
 
-from clipmasterprints import Experiment, StableDiffusionWrapperWGradient, LatentRepresentation, CLIPLoss, ShiftedCLIPLoss, CMAESOptimizer, GradientOptimizer,clip_extract_image_embeddings_on_demand,build_clip
+from clipmasterprints import Experiment, StableDiffusionWrapperWGradient, LatentRepresentation, IdentityRepresentation, CLIPLoss, BLIPLoss, SigLIPLoss, ShiftedCLIPLoss, CMAESOptimizer, GradientOptimizer,RawGradientOptimizer,IntPGDOptimizer,clip_extract_image_embeddings_on_demand,build_clip, build_blip, build_siglip
 from functools import partial
 
 candidate_to_2d = lambda input, shape: input.reshape(shape).astype('float32')
@@ -48,6 +48,13 @@ def save_solution_grad(best_image,latents,losses, iter, outpath):
     img = Image.fromarray((best_image * 255).astype(np.uint8))
     img.save(os.path.join(outpath,f'solution_{iter:05}.png'))
 
+def save_solution_grad_uint8(best_image,latents,losses, iter, outpath):
+    best_image = to_np_image(best_image)
+    plt.imshow(best_image/255.)
+    plt.show()
+    img = Image.fromarray((best_image).astype(np.uint8))
+    img.save(os.path.join(outpath,f'solution_{iter:05}.png'))
+
 def parse_args():
     parser = argparse.ArgumentParser(
         prog='mine',
@@ -60,6 +67,10 @@ def parse_args():
 def get_optimizer_class(str_conf):
     if str_conf == "SGD":
         optimizer_class = GradientOptimizer
+    elif str_conf == "RAWSGD":
+        optimizer_class = RawGradientOptimizer
+    elif str_conf == "PGD":
+        optimizer_class = IntPGDOptimizer
     else:
         # default optimizer is always CMA-ES
         optimizer_class = CMAESOptimizer
@@ -83,18 +94,28 @@ def find_fooling():
     experiment = Experiment(config.EXPERIMENT_LOG.BASEPATH, config.EXPERIMENT_LOG.MODEL_NAME, config.EXPERIMENT_LOG.EXPERIMENT_NAME)
     logging.basicConfig(filename=os.path.join(experiment.log_path(),'mine.log'))
 
-    # load the autoencoder model
-    autoencoder = StableDiffusionWrapperWGradient(config.AUTOENCODER.CONFIG_PATH, config.AUTOENCODER.WEIGHT_PATH, image_dims=(config.AUTOENCODER.IMG_HEIGHT,config.AUTOENCODER.IMG_WIDTH)).to(device)
-    # TODO: After refactoring, LatentRepresentation is unnecessary. Adjust interfaces!
-    representation = LatentRepresentation(autoencoder)
-
     captions = open(config.DATA.CAPTION_PATH,'r').read().split('\n')
     # filter empty strings
     captions = [caption for caption in captions if caption]
-    ac_dims = (1,config.AUTOENCODER.LATENT_CHANNELS,config.AUTOENCODER.IMG_HEIGHT // config.AUTOENCODER.DOWNSAMPLING_FACTOR,config.AUTOENCODER.IMG_WIDTH // config.AUTOENCODER.DOWNSAMPLING_FACTOR)
+
+    #FIXXXME: IMG_HEIGHT and IMG_WIDTH are actually a property of CLIP, not the autoencoder, and should always be fixed to CLIP input size
+    if config.OPTIMIZER.METHOD == 'RAWSGD' or config.OPTIMIZER.METHOD=='PGD':
+        ac_dims = (1,3,config.AUTOENCODER.IMG_HEIGHT,config.AUTOENCODER.IMG_WIDTH)
+        autoencoder = None
+        representation = IdentityRepresentation()
+    else:
+        # load the autoencoder model
+        autoencoder = StableDiffusionWrapperWGradient(config.AUTOENCODER.CONFIG_PATH, config.AUTOENCODER.WEIGHT_PATH,
+                                                      image_dims=(
+                                                      config.AUTOENCODER.IMG_HEIGHT, config.AUTOENCODER.IMG_WIDTH)).to(
+            device)
+        # TODO: After refactoring, LatentRepresentation is unnecessary. Adjust interfaces!
+        representation = LatentRepresentation(autoencoder)
+
+        ac_dims = (1,config.AUTOENCODER.LATENT_CHANNELS,config.AUTOENCODER.IMG_HEIGHT // config.AUTOENCODER.DOWNSAMPLING_FACTOR,config.AUTOENCODER.IMG_WIDTH // config.AUTOENCODER.DOWNSAMPLING_FACTOR)
 
     # arrange hyperparams into dict
-    hyperparam_dict = {'save_after_x_iter': config.OPTIMIZER.CHECK_POINT_AFTER_X_ITER, 'init_vector':'norm', 'sigma_0': 1., 'pop_size':'default', 'max_iter': config.OPTIMIZER.ITER, 'learning_rate': config.OPTIMIZER.LR, 'batch_size': config.OPTIMIZER.BATCH_SIZE}
+    hyperparam_dict = {'save_after_x_iter': config.OPTIMIZER.CHECK_POINT_AFTER_X_ITER, 'init_vector':'norm', 'sigma_0': 1., 'pop_size':'default', 'max_iter': config.OPTIMIZER.ITER, 'learning_rate': config.OPTIMIZER.LR, 'batch_size': config.OPTIMIZER.BATCH_SIZE,'x_init_path': config.OPTIMIZER.X_INIT_PATH}
     num_runs = config.NUM_RUNS
     sample_from_captions_lst = config.SAMPLE_CAPTIONS
 
@@ -120,8 +141,13 @@ def find_fooling():
                 for caption in current_captions:
                     outfile.write(caption)
                     outfile.write('\n')
-
-            clip_models = dict([(clip_string, (clip_model, preprocessing)) for (clip_string, clip_model, preprocessing) in
+            # FIXXXME: crate a model wrapper, that allowes for mixing and matching of different CLIP and BLIP models in the same loss
+            if config.CLIP.MODEL_STRINGS[0] == "BLIP":
+                clip_models = dict([(blip_string,(blip_model,preprocessing)) for (blip_string,blip_model,preprocessing) in [build_blip(blip_string,device=device) for blip_string in config.CLIP.MODEL_STRINGS]])
+            elif config.CLIP.MODEL_STRINGS[0] == "SigLIP":
+                clip_models = dict([(siglip_string,(siglip_model,preprocessing)) for (siglip_string,siglip_model,preprocessing) in [build_siglip(siglip_string,device=device) for siglip_string in config.CLIP.MODEL_STRINGS]])
+            else:
+                clip_models = dict([(clip_string, (clip_model, preprocessing)) for (clip_string, clip_model, preprocessing) in
                     [build_clip(clip_string,device=device) for clip_string in config.CLIP.MODEL_STRINGS]])
 
             # TODO: FIXXXME: spaghetti code, wrap into function or class
@@ -147,17 +173,23 @@ def find_fooling():
 
                 loss = ShiftedCLIPLoss(clip_models, current_captions, representation, device=device, input_size=config.AUTOENCODER.IMG_HEIGHT, clip_bs=config.CLIP.BATCH_SIZE, rep_bs=config.AUTOENCODER.BATCH_SIZE,
                                        gap_vectors=gap_vectors)
+            elif config.CLIP.MODEL_STRINGS[0] == "BLIP":
+                loss = BLIPLoss(clip_models, current_captions, representation, device=device, input_size=config.AUTOENCODER.IMG_HEIGHT, clip_bs=config.CLIP.BATCH_SIZE, rep_bs=config.AUTOENCODER.BATCH_SIZE)
+            elif config.CLIP.MODEL_STRINGS[0] == "SigLIP":
+                loss = SigLIPLoss(clip_models, current_captions, representation, device=device, input_size=config.AUTOENCODER.IMG_HEIGHT, clip_bs=config.CLIP.BATCH_SIZE, rep_bs=config.AUTOENCODER.BATCH_SIZE)
             else:
                 loss = CLIPLoss(clip_models, current_captions, representation, device=device, input_size=config.AUTOENCODER.IMG_HEIGHT, clip_bs=config.CLIP.BATCH_SIZE, rep_bs=config.AUTOENCODER.BATCH_SIZE)
             #FIXXME: this is hacky, find better solution to unify callback signatures
-            if config.OPTIMIZER.METHOD == 'SGD':
+            if config.OPTIMIZER.METHOD == 'SGD' or config.OPTIMIZER.METHOD == 'RAWSGD':
                 checkpoint_fn = partial(save_solution_grad, outpath=outpath)
+            elif config.OPTIMIZER.METHOD == 'PGD':
+                checkpoint_fn = partial(save_solution_grad_uint8, outpath=outpath)
             else:
                 checkpoint_fn = partial(save_solution, outpath=outpath, weightpath=weightpath,
                                     latent_shape=(1,) + loss.latent_shape[1:], representation=representation,
                                     torch_device=device)
 
-            optimizer = get_optimizer_class(config.OPTIMIZER.METHOD)(loss=loss, latent_dims=ac_dims, hyperparams=hyperparam_dict, device=device,save_callback=checkpoint_fn)
+            optimizer = get_optimizer_class(config.OPTIMIZER.METHOD)(loss=loss, latent_dims=ac_dims, hyperparams=hyperparam_dict, device=device, save_callback=checkpoint_fn)
             optimizer.optimize()
 
 if __name__ == '__main__':

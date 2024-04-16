@@ -1,1 +1,1 @@
-from .refine import refine_clip_mp, refine_clip_wrong_token_loop
+from .refine import refine_clip_mp, refine_clip_wrong_token_loop, refine_clip_wrong_token_random

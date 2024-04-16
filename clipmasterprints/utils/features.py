@@ -16,16 +16,33 @@ def clip_extract_image_embeddings(model, dataloader, device):
         labels_lst.append(labels)
     return (torch.cat(features_lst,dim=0),torch.cat(labels_lst,dim=0))
 
-def clip_extract_image_embeddings_on_demand(model,dataloader, path, device):
+def blip_extract_image_embeddings(model, dataloader, device):
+    features_lst = []
+    labels_lst = []
+    for batch in tqdm(dataloader):
+        images = batch[0].to(device)
+        labels = batch[1].to(device)
+        with torch.no_grad():
+            image_embeds = model.visual_encoder(images)
+            image_features = model.vision_proj(image_embeds[:, 0, :])
+        features_lst.append(image_features)
+        labels_lst.append(labels)
+    return (torch.cat(features_lst,dim=0),torch.cat(labels_lst,dim=0))
+
+def siglip_extract_image_embeddings(model, dataloader, device):
+    #siglip and clip have identical interfaces atm
+    return clip_extract_image_embeddings(model, dataloader, device)
+
+def clip_extract_image_embeddings_on_demand(model, dataloader, path, device, extractor_callback=clip_extract_image_embeddings):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     if not os.path.exists(path):
-        (image_features, labels) = clip_extract_image_embeddings(model, dataloader, device)
+        (image_features, labels) = extractor_callback(model, dataloader, device)
         with open(path,'wb') as file:
-            torch.save((image_features,labels),file)
+            torch.save((image_features, labels), file)
 
-    with open(path,'rb') as file:
-        (image_features, labels) = torch.load(file,map_location=device)
-    return(image_features,labels)
+    with open(path, 'rb') as file:
+        (image_features, labels) = torch.load(file, map_location=device)
+    return(image_features, labels)
 
 def eval_accuracy(image_features, text_features, labels):
     image_features/=image_features.norm(dim=1,keepdim=True)
@@ -34,13 +51,17 @@ def eval_accuracy(image_features, text_features, labels):
     predicted_class = torch.argmax(text_probs, dim=1)
     return torch.sum(predicted_class == labels).cpu().numpy()/image_features.shape[0]
 
-def get_similarities_per_class(image_features, image_labels, text_features, idx_to_class):
+def get_similarities_per_class(image_features, image_labels, text_features, idx_to_class, siglip=False, logit_scale=None, logit_bias=None):
     similarities = defaultdict(list)
     classes = torch.unique(image_labels)
     for imagenet_class in classes:
         caption = idx_to_class[imagenet_class.item()]
-        similarities[caption].append(
-        torch.mm(text_features[imagenet_class].view(1, -1), image_features[image_labels == imagenet_class].T))
+        sim = torch.mm(text_features[imagenet_class].view(1, -1), image_features[image_labels == imagenet_class].T)
+        if siglip is True:
+            sim *= logit_scale.exp()
+            sim += logit_bias
+            sim = torch.sigmoid(sim)
+        similarities[caption].append(sim)
     return similarities
 
 def eval_fooling_accuracy(image_features, image_labels, text_features, fooling_vec, classes):

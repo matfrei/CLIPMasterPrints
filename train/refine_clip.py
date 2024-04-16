@@ -6,7 +6,7 @@ import pickle
 
 from torch.utils.tensorboard import SummaryWriter
 
-from clipmasterprints import Experiment, ImageFolderCaption, refine_clip_wrong_token_loop, StableDiffusionWrapper,LatentRepresentation, CLIPLoss, CMAESOptimizer
+from clipmasterprints import Experiment, ImageFolderCaption, refine_clip_wrong_token_loop, StableDiffusionWrapper,LatentRepresentation, CLIPLoss, CMAESOptimizer,build_clip
 
 # TODO: make this script configurable using a config file
 
@@ -19,7 +19,7 @@ writer = SummaryWriter(log_dir=experiment.tb_path())
 log_path = os.path.join(experiment.log_path(),'training.log')
 logging.basicConfig(filename=log_path,level=logging.INFO)
 
-device = torch.device("cuda:1") if torch.cuda.is_available() else torch.device("cpu")
+device = torch.device("cuda:2") if torch.cuda.is_available() else torch.device("cpu")
 
 # load clip model
 clip_model, preprocess = clip.load('ViT-L/14',device=device,jit=False)
@@ -46,12 +46,17 @@ representation = LatentRepresentation(autoencoder)
 
 captions = open('data/imagenet_classes.txt', 'r').read().split('\n')
 
-loss = CLIPLoss(['ViT-L/14'], captions, representation, device=device,
+clip_models = dict([(clip_string, (clip_model, preprocessing)) for (clip_string, clip_model, preprocessing) in
+                    [build_clip(clip_string, device=device) for clip_string in ['ViT-L/14']]])
+
+clip_model, preprocess = clip.load('ViT-L/14',device=device)
+loss = CLIPLoss(clip_models , captions, representation, device=device,
                 input_size=224, clip_bs=40,
                 rep_bs=15)
 
-flattened_dim = 4 * (224 // 8) * (224 // 8)
-optimizer = CMAESOptimizer(loss=loss, n_features=flattened_dim)
+#flattened_dim = 4 * (224 // 8) * (224 // 8)
+ac_dims = (1, 3, 224 // 8, 224 // 8)
+optimizer = CMAESOptimizer(loss=loss, latent_dims=ac_dims)
 
 # load ES optimizer w found good solution
 with open('results/es_imagenet_25.pkl','rb') as pkl_file:

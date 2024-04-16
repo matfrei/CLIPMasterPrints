@@ -1,0 +1,11 @@
+4WD
+go-kart
+golfcart
+golf cart
+hearse
+motorcycle
+bike
+snowplow
+snowplough
+truck
+motortruck

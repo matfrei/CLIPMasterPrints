@@ -1,1 +1,1 @@
-from .clip_loss import CLIPLoss,ShiftedCLIPLoss
+from .clip_loss import CLIPLoss,BLIPLoss,SigLIPLoss,ShiftedCLIPLoss
