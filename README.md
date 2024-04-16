@@ -1,4 +1,4 @@
-# CLIPMasterPrints: Fooling Contrastive Language-Image Pre-training Using Latent Variable Evolution
+# Fooling Contrastive Language-Image Pre-trained Models with CLIPMasterPrints
 
 [![Paper](https://img.shields.io/badge/paper-arxiv.2307.03798-B31B1B.svg)](https://arxiv.org/abs/2307.03798) 
 
@@ -63,9 +63,11 @@ python eval/eval_results.py
 Authors
 -------
 
-Matthias Freiberger <matfr@itu.dk>
+Matthias Freiberger <mafr@di.ku.dk>
 
 Peter Kun <peku@itu.dk>
+
+Christian Igel <igel@di.ku.dk>
 
 Anders Sundnes Løvlie <asun@itu.dk>
  
@@ -80,9 +82,9 @@ If you use the code for academic or commecial use, please cite the associated pa
   
   url = {https://arxiv.org/abs/2307.03798},
   
-  author = {Freiberger, Matthias  and Kun, Peter and Løvlie, Anders Sundnes and Risi, Sebastian},
+  author = {Freiberger, Matthias  and Kun, Peter and Igel, Christian and Løvlie, Anders Sundnes and Risi, Sebastian},
   
-  title = {CLIPMasterPrints: Fooling Contrastive Language-Image Pre-training Using Latent Variable Evolution},
+  title = {Fooling Contrastive Language-Image Pre-trained Models with CLIPMasterPrints},
   
   publisher = {arXiv},
   
