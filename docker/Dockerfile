@@ -69,6 +69,8 @@ WORKDIR /BLIP
 RUN pip install -r requirements.txt
 ENV PYTHONPATH=$PYTHONPATH:/path/to/blip/BLIP
 
+ARG CACHEBUST
+
 WORKDIR /
 RUN git clone https://github.com/matfrei/CLIPMasterPrints.git
 
