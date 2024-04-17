@@ -79,6 +79,7 @@ To display some plots for mined images, execute
 ```
 python eval/eval_results.py
 ```
+The shown plots are also saved under ```./figures/```
 
 Training a classifier to detect CLIPMasterPrints
 -------
