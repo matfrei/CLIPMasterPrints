@@ -33,8 +33,9 @@ def plot_similarity_heatmap(captions,images,similarities,path):
     plt.ylim([count + 0.5, -2])
 
     plt.tight_layout()
+
+    plt.savefig(path, bbox_inches='tight', format='pdf', dpi=300)
     plt.show()
-    plt.savefig(path, bbox_inches='tight')
 
 def scatter_optimized_classes(opt_captions,sim_fooling,sim_imagenet_opt, path):
     df_input = [(key, inner_value, 'ImageNet') for key, value_lst in sim_imagenet_opt.items() for inner_value in

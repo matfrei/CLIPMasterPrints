@@ -9,6 +9,7 @@ import numpy as np
 from collections import OrderedDict
 import pandas as pd
 import seaborn as sns
+from pathlib import Path
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from open_clip import get_tokenizer
@@ -24,6 +25,9 @@ IMAGENET_VAL_PATH = '~/data/imagenet2012/val'
 EVAL_BATCH_SIZE = 100
 NUM_WORKERS = 2
 
+FIGURE_OUTPUT_PATH = f"figures/"
+Path(FIGURE_OUTPUT_PATH).mkdir(parents=True, exist_ok=True)
+
 def plot_art_heatmap():
     clip_model, preprocess = clip.load('ViT-L/14@336px',device=device)
     clip_model.eval()
@@ -31,7 +35,7 @@ def plot_art_heatmap():
     captions = open('data/famous_paintings.txt').read().split('\n') + ['Random noise image']
     img_filenames = ['Mona_Lisa.jpeg','last_supper.jpeg','starry_night.jpeg','scream.jpeg','Gernika.jpeg','the_kiss.jpeg','girl_with_a_pearl_earring.jpg','birth_of_venus.jpeg','las_meninas.jpeg','creation_of_adam.jpeg',]
     img_paths = [os.path.join('data/paintings',filename) for filename in img_filenames]
-    img_paths += ['results/baseline/random.png','results/master_images/cmp_art.png']
+    img_paths += ['results/baseline/random.png','results/master_images/cmp_artworks_pgd_int.png']
     images = [Image.open(path).convert("RGB") for path in img_paths]
     images_pp = [preprocess(image) for image in images]
 
@@ -45,7 +49,7 @@ def plot_art_heatmap():
     text_features /= text_features.norm(dim=-1, keepdim=True)
     similarity_art = text_features.cpu().numpy() @ image_features.cpu().numpy().T
     np.savetxt('figure1_data.txt',similarity_art)
-    plot_similarity_heatmap(captions, images, similarity_art,'figure_1.pdf')
+    plot_similarity_heatmap(captions, images, similarity_art,os.path.join(FIGURE_OUTPUT_PATH,'figure_1.pdf'))
 
 
 def sample_opt_idcs(num_captions,random_seed = 0):
@@ -198,7 +202,7 @@ def plot_imagenet_scatter(clip_model, preprocess, similarities_imagenet,opt_capt
     similarities_fooling = image_features @ text_features.T
     similarities_imagenet_opt = dict(
         [(key, value) for key, value in similarities_imagenet.items() if key in opt_captions])
-    scatter_optimized_classes_multi(opt_captions,[('LVE',similarities_fooling[0,:][None].cpu().numpy()),('SGD',similarities_fooling[1,:][None].cpu().numpy()),('PGD',similarities_fooling[2,:][None].cpu().numpy())], similarities_imagenet_opt,'imagenet_25.pdf')
+    scatter_optimized_classes_multi(opt_captions,[('LVE',similarities_fooling[0,:][None].cpu().numpy()),('SGD',similarities_fooling[1,:][None].cpu().numpy()),('PGD',similarities_fooling[2,:][None].cpu().numpy())], similarities_imagenet_opt,os.path.join(FIGURE_OUTPUT_PATH,'figure_3_a.pdf'))
 
 def plot_lines_multi(similarities_imagenet):
     samples = [25, 50, 75, 100]
@@ -268,7 +272,7 @@ def plot_lines_multi(similarities_imagenet):
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.show()
-    sns_plot.savefig('lines_multi.pdf', dpi=300)
+    sns_plot.savefig(os.path.join(FIGURE_OUTPUT_PATH,'figure_3_b.pdf'), dpi=300)
 
 def eval_clip(images, captions,clip_string):
 
@@ -369,7 +373,7 @@ def plot_lines_multi_other_approaches(similarities_imagenet_vit, similarities_im
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.show()
-    sns_plot.savefig('lines_multi_other_approaches.pdf', dpi=300)
+    sns_plot.savefig(os.path.join(FIGURE_OUTPUT_PATH,'figure_5.pdf'), dpi=300)
 
 
 def generate_poi_table(val_features_unnorm, val_lables, captions, clip_model, preprocess):
@@ -503,8 +507,8 @@ def wordnet_transfer():
     sns.set_context("paper")
     plt.figure()
     sns.swarmplot(data=df_swarm, x="superclass", y="CLIP Score", hue="targeted")
-    #plt.show()
-    plt.savefig('wordnet_swarm.pdf', format='pdf', dpi=300)
+    plt.show()
+    plt.savefig(os.path.join(FIGURE_OUTPUT_PATH,'figure_4.pdf'), format='pdf', dpi=300)
 
 def plot_violines_extended_multi(similarities_imagenet,num_runs=10):
     fontsize = 7
@@ -569,9 +573,10 @@ def plot_violines_extended_multi(similarities_imagenet,num_runs=10):
     #plt.legend(loc='upper right')
     #plt.tight_layout()
     plt.show()
-    sns_plot.savefig('violin_multi_extended.pdf', dpi=300)
+    sns_plot.savefig(os.path.join('figure_8.pdf'), dpi=300)
     df_x = df[df['type']=='PGD']
 
+plot_art_heatmap()
 model_dict = {}
 # load clip model
 clip_model_vit, preprocess_vit = clip.load('ViT-L/14', device=device)
