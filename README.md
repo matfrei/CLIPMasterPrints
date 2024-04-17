@@ -37,11 +37,31 @@ cd ../..
 
 ```
 
-After all Stable Diffusion dependencies are installed, install the package from source using
+
+
+Installing  BLIP depencies
+-------
+To mine CLIPMasterPrints for BLIP, clone the BLIP github repository and add it to your PYTHONPATH
 
 ```
-git clone https://github.com/matfrei/CLIPMasterPrints.git
-cd CLIPMasterPrints
+mkdir /path/to/blip
+cd /path/to/blip
+git clone https://github.com/salesforce/BLIP.git
+cd BLIP
+pip install -r requirements.txt
+export PYTHONPATH=$PYTHONPATH:/path/to/blip/BLIP
+```
+
+
+Installing SigLip dependencies
+-------
+All requirements for mining from SigLip models should be accounted for in the clipmasterprints package, open-clip-torch>=2.23.0 and timm>=0.9.8 are required
+
+Installing the CLIPMasterPrints package
+-------
+After all Stable diffusion and BLIP dependencies are installed, install the package from source using
+
+```
 pip install -e .
 ```
 
