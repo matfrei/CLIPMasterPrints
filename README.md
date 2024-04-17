@@ -37,11 +37,31 @@ cd ../..
 
 ```
 
-After all Stable Diffusion dependencies are installed, install the package from source using
+
+
+### Installing  BLIP depencies
+
+To mine CLIPMasterPrints for BLIP, clone the BLIP github repository and add it to your PYTHONPATH
 
 ```
-git clone https://github.com/matfrei/CLIPMasterPrints.git
-cd CLIPMasterPrints
+mkdir /path/to/blip
+cd /path/to/blip
+git clone https://github.com/salesforce/BLIP.git
+cd BLIP
+pip install -r requirements.txt
+export PYTHONPATH=$PYTHONPATH:/path/to/blip/BLIP
+```
+
+
+### Installing SigLip dependencies
+
+All requirements for mining from SigLip models should be accounted for in the clipmasterprints package, open-clip-torch>=2.23.0 and timm>=0.9.8 are required
+
+### Installing the CLIPMasterPrints package
+
+After all Stable diffusion and BLIP dependencies are installed, install the package from source using
+
+```
 pip install -e .
 ```
 
@@ -59,6 +79,37 @@ To display some plots for mined images, execute
 ```
 python eval/eval_results.py
 ```
+
+Training a classifier to detect CLIPMasterPrints
+-------
+
+### Mining the dataset
+Since our used dataset is based on the ILSVRC 2012 imagenet subset, we cannot distribute it due to licensing reasons. You can mine a similar dataset though by calling
+
+```
+python tools/mine_adv_dataset.py
+```
+Do not forget to adjust the paths in the script accordingly to match the desired input and output paths on your file system,
+
+After the dataset has been mined correctly and written to /path/to/dataset/tainted, assuming that the original ILRSVRC 2012 data can found under /path/to/imagenet, create a symbolic link to the imagenet folder into  /path/to/dataset/ in order to provide some negative examples:
+
+```
+ln -s /path/to/imagenet/  /path/to/dataset/purw
+```
+
+### Training a classifier
+Again, after adjusting the path pointing to the adverserial dataset in the script, run
+
+```
+python train/train_adv_detector.py
+```
+
+### Evluating a trained classifier
+
+```
+python eval/eval_adv_detector.py
+```
+
 
 Authors
 -------
