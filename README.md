@@ -95,7 +95,7 @@ Do not forget to adjust the paths in the script accordingly to match the desired
 After the dataset has been mined correctly and written to /path/to/dataset/tainted, assuming that the original ILRSVRC 2012 data can found under /path/to/imagenet, create a symbolic link to the imagenet folder into  /path/to/dataset/ in order to provide some negative examples:
 
 ```
-ln -s /path/to/imagenet/  /path/to/dataset/purw
+ln -s /path/to/imagenet/  /path/to/dataset/pure
 ```
 
 ### Training a classifier
@@ -105,7 +105,7 @@ Again, after adjusting the path pointing to the adverserial dataset in the scrip
 python train/train_adv_detector.py
 ```
 
-### Evluating a trained classifier
+### Evaluating a trained classifier
 
 ```
 python eval/eval_adv_detector.py
