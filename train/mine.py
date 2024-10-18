@@ -12,7 +12,9 @@ from config.defaults import get_cfg_defaults
 from PIL import Image
 from pathlib import Path
 
-from clipmasterprints import Experiment, StableDiffusionWrapperWGradient, LatentRepresentation, IdentityRepresentation, CLIPLoss, BLIPLoss, SigLIPLoss, ShiftedCLIPLoss, CMAESOptimizer, GradientOptimizer,RawGradientOptimizer,IntPGDOptimizer,clip_extract_image_embeddings_on_demand,build_clip, build_blip, build_siglip
+from clipmasterprints import Experiment, CLIPLoss, BLIPLoss, SigLIPLoss, ShiftedCLIPLoss, CMAESOptimizer, GradientOptimizer,RawGradientOptimizer,IntPGDOptimizer,clip_extract_image_embeddings_on_demand,build_clip, build_blip, build_siglip
+from clipmasterprints.decoders import StableDiffusionWrapperWGradient, LatentRepresentation, IdentityRepresentation
+
 from functools import partial
 
 candidate_to_2d = lambda input, shape: input.reshape(shape).astype('float32')

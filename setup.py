@@ -18,7 +18,8 @@ setup(
         "seaborn==0.11",
         "open-clip-torch>=2.23.0",
         "timm==0.9.8",
-        "transformers==4.19.2"
+        "transformers==4.19.2",
+        "omegaconf"
     ]
 )
 
