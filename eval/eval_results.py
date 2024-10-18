@@ -370,7 +370,7 @@ def plot_lines_multi_other_approaches(similarities_imagenet_vit, similarities_im
         palette=sns.color_palette('colorblind', n_colors=2*len(paths)), legend=False)
 
     axes = sns_plot.axes.flatten()
-    plt.legend(loc='upper right')
+    plt.legend(loc='upper right',bbox_to_anchor=(1.,.95))
     plt.tight_layout()
     plt.show()
     sns_plot.savefig(os.path.join(FIGURE_OUTPUT_PATH,'figure_5.pdf'), dpi=300)
