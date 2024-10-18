@@ -147,8 +147,14 @@ class BLIPLoss(CLIPLoss):
         return similarity_dict
 
 class SigLIPLoss(CLIPLoss):
+    def __init__(self, clip_models, captions, representation, input_size, device, clip_bs, rep_bs, aggregate=global_min,
+                 smaller_is_better=True, tokenizer='hf-hub:timm/ViT-L-16-SigLIP-384'):
+        self.tokenizer = tokenizer
+        super().__init__(clip_models, captions, representation, input_size, device, clip_bs, rep_bs, aggregate,smaller_is_better)
+
+
     def process_captions(self, captions):
-        tokenizer = get_tokenizer('hf-hub:timm/ViT-L-16-SigLIP-384')
+        tokenizer = get_tokenizer(self.tokenizer)
 
         siglip_text_features = {}
         for (siglip_string, (siglip_model, preprocess)) in self.clip_models.items():
