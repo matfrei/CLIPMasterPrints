@@ -1,11 +1,9 @@
-import clip
 import torch, torchvision
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
-from models.blip_itm import blip_itm
-from open_clip import create_model_from_pretrained # works on open-clip-torch>=2.23.0, timm>=0.9.8
 
 def build_clip(clip_string,device,tensor_input=True):
+    import clip
     try:
         clip_model, preprocess = clip.load(clip_string,device='cpu')
     except EOFError:
@@ -30,6 +28,7 @@ def build_clip(clip_string,device,tensor_input=True):
 #FIXXXME: unify all builderfunction into a single builderfunction calling the specialist builder function
 #         (factory method pattern)
 def build_blip(blip_string,device,tensor_input=True):
+    from models.blip_itm import blip_itm
     image_size = 384
     model_url = 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_retrieval_coco.pth'
     model = blip_itm(pretrained=model_url, image_size=image_size, vit='base',med_config='../BLIP/configs/med_config.json')
@@ -49,6 +48,7 @@ def build_blip(blip_string,device,tensor_input=True):
     return (blip_string,model,preprocess)
 
 def build_siglip(siglip_string,device,tensor_input=True):
+    from open_clip import create_model_from_pretrained  # works on open-clip-torch>=2.23.0, timm>=0.9.8
     image_size = 384
     model, preprocess = create_model_from_pretrained('hf-hub:timm/ViT-L-16-SigLIP-384')
     model.eval()
